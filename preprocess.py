@@ -1,7 +1,3 @@
-import pickle
-print('imported pickle')
-import numpy
-print('imported numpy')
 import nltk.tokenize as tokenize
 print('imported tokenize')
 import re
@@ -9,7 +5,7 @@ print('imported re')
 import ngrams #we made this file
 
 def binary_search(key,l):
-    low_bound = 0
+    low_bound = -1
     high_bound = len(l)
     while True:
         check = (low_bound + high_bound)//2
@@ -21,7 +17,7 @@ def binary_search(key,l):
         elif item < key:
             low_bound = check
         else:
-            high_bound = check
+            high_bound = check    
 
 with open('rscotland_corpus.txt','r',encoding = 'utf-8') as f:
     text = f.read()
@@ -41,15 +37,16 @@ flipped = ngrams.flip_dict(words)
 counts = sorted(list(flipped))
 print('flipped')
 
-unknowns = [word for i in counts[:3] for word in flipped[i]]
+unknowns = sorted([word for i in counts[:3] for word in flipped[i]])
 print('enumerated unknowns')
 
-knowns = [word for i in counts[3:] for word in flipped[i]]
+knowns = sorted([word for i in counts[3:] for word in flipped[i]])
 print('enumerated knowns')
 
-tokenized = [[(word if binary_search(word,unknowns) else '<unk/>') for word in comment] for comment in tokenized]
-print('marked unknowns')
+assert(len(unknowns) + len(knowns) == sum(len(value) for key, value in flipped.items()))
 
-with open('data.pkl','wb') as f:
-    pickle.dump([tokenized,knowns,unknowns,corpus_word_count],f)
-print('pickled')
+def is_known(word):
+    return binary_search(word,knowns)
+
+tokenized_unks = [[(word if is_known(word) else '<unk/>') for word in comment] for comment in tokenized]
+print('marked unknowns')
