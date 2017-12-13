@@ -46,6 +46,10 @@ def softmax(array):
     total = sum(exps)
     return [n/total for n in exps]
 
+def random_word(prob_dist,exclude_unks = False):
+    word = np.random.choice(knowns + ['<unk/>'],p=prob_dist)
+    return word
+
 class RNNNumpy:
     def __init__(self, io_size, hidden_size=100, bptt_truncate=4):
         self.io_size = io_size              #size of input and output vectors (vocab size plus one for unknown token)
@@ -68,6 +72,12 @@ class RNNNumpy:
             s[step] = np.tanh(self.U[:,x[step]] + self.W.dot(s[step-1]))
             o[step] = softmax(self.V.dot(s[step]))
         return (o, s)
+
+    def to_sent(self,o):
+        out = []
+        for vector in o:
+            out.append(random_word(vector))
+        return out
 
 rnn = RNNNumpy(vocab_size+1)
 outputs, hiddens = rnn.forward_propagate(comment2ints(tokenized_unks[0]))
